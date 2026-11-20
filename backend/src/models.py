@@ -1,5 +1,5 @@
 from datetime import datetime,timezone,date
-from sqlalchemy import String,Integer,Float,ForeignKey,UniqueConstraint,CheckConstraint,DateTime,Date,JSON,Boolean,Text
+from sqlalchemy import String,Integer,Float,ForeignKey,UniqueConstraint,CheckConstraint,DateTime,Date,JSON,Boolean,Text,Index,text
 from sqlalchemy.orm import Mapped,mapped_column
 from .database import Base
 from .constants import CruiseState,AnalysisState
@@ -128,6 +128,18 @@ class SurveyRelease(Base):
     snapshot:Mapped[dict]=mapped_column(JSON)
     canonical_json:Mapped[str]=mapped_column(Text)
     sha256:Mapped[str]=mapped_column(String(64))
+    at:Mapped[datetime]=mapped_column(DateTime(timezone=True),default=now)
+class LayerIntake(Base):
+    __tablename__='layer_intakes'
+    # 同一下载件(按canonical_json字节SHA256)只入一次账，重试幂等；同航次仅一份accepted。
+    __table_args__=(UniqueConstraint('file_sha256',name='uq_layer_intake_file'),Index('uq_layer_intake_cruise_accepted','cruise_code',unique=True,postgresql_where=text("status='accepted'"),sqlite_where=text("status='accepted'")),CheckConstraint("status in ('accepted','returned','pending')"))
+    id:Mapped[int]=mapped_column(primary_key=True)
+    cruise_code:Mapped[str]=mapped_column(String(40))
+    file_sha256:Mapped[str]=mapped_column(String(64))
+    status:Mapped[str]=mapped_column(String(20))
+    source_filename:Mapped[str]=mapped_column(String(160),default='')
+    checks:Mapped[list]=mapped_column(JSON,default=list)
+    detail:Mapped[str]=mapped_column(String(500),default='')
     at:Mapped[datetime]=mapped_column(DateTime(timezone=True),default=now)
 class Audit(Base):
     __tablename__='audit'

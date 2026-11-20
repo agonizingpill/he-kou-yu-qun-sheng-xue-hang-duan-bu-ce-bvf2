@@ -1,0 +1,141 @@
+{
+  "passed": 27,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "航段E1含分群规则",
+      "ok": true,
+      "extra": ""
+    },
+    {
+      "name": "航段E1含回波顺序且与点数一致",
+      "ok": true,
+      "extra": ""
+    },
+    {
+      "name": "航段E2含分群规则",
+      "ok": true,
+      "extra": ""
+    },
+    {
+      "name": "航段E2含回波顺序且与点数一致",
+      "ok": true,
+      "extra": ""
+    },
+    {
+      "name": "状态 accepted",
+      "ok": true,
+      "extra": "accepted"
+    },
+    {
+      "name": "两航段全部 passed",
+      "ok": true,
+      "extra": "[{'transect': 'E1', 'echo_count': 30, 'input_sha256': 'f759789a936994f5ab39d7253ae97f19f8168d33947511e3d0fd468a9a732130', 'result': 'passed', 'detail': '3个分群成员逐点一致（群号差异已忽略）', 'cluster_count': 3}, {'transect': 'E2', 'echo_count': 30, 'input_sha256': '0bbf0105cf73670c7dc1a2e9c7e9acb53b4440d1d296562c59bf71ccd1de875c', 'result': 'passed', 'detail': '3个分群成员逐点一致（群号差异已忽略）', 'cluster_count': 3}]"
+    },
+    {
+      "name": "重试返回409且提示不重复收件",
+      "ok": true,
+      "extra": "该图层已收件（存根#1，状态accepted），重试不重复收件"
+    },
+    {
+      "name": "收件记录数未增加",
+      "ok": true,
+      "extra": ""
+    },
+    {
+      "name": "重标号复算通过",
+      "ok": true,
+      "extra": "航次CY-A全部2航段复算通过：60回波点/6分群"
+    },
+    {
+      "name": "明细提示忽略群号差异",
+      "ok": true,
+      "extra": ""
+    },
+    {
+      "name": "复算判 returned",
+      "ok": true,
+      "extra": "航次CY-RET存在归错群航段，整箱退回"
+    },
+    {
+      "name": "指出航段E1归错群",
+      "ok": true,
+      "extra": "{'transect': 'E1', 'echo_count': 30, 'input_sha256': 'f759789a936994f5ab39d7253ae97f19f8168d33947511e3d0fd468a9a732130', 'result': 'returned', 'detail': '归错群：2个回波点分群与复算不符（首点echo_id=1）', 'mismatched_echo_ids': [1, 2]}"
+    },
+    {
+      "name": "未动航段E2仍逐点通过",
+      "ok": true,
+      "extra": ""
+    },
+    {
+      "name": "退回件登记为 returned 而非入账",
+      "ok": true,
+      "extra": ""
+    },
+    {
+      "name": "旧件状态 pending",
+      "ok": true,
+      "extra": "航次CY-OLD旧件缺复算依据，待补后重交"
+    },
+    {
+      "name": "逐航段标注待补",
+      "ok": true,
+      "extra": ""
+    },
+    {
+      "name": "CY-B 首份 accepted",
+      "ok": true,
+      "extra": ""
+    },
+    {
+      "name": "第二份返回409冲突",
+      "ok": true,
+      "extra": "航次CY-B已有入账图层（存根#4，0b8a235fe944），本件报冲突拒收"
+    },
+    {
+      "name": "CY-B 仅一份 accepted 且为首件",
+      "ok": true,
+      "extra": ""
+    },
+    {
+      "name": "sha不符返回400",
+      "ok": true,
+      "extra": "校验和不符：canonical_json UTF-8字节SHA256=e64c4a374b471bcb91f748b79c5adc3e9b92a1c5e65e0991be6564eab18ff6b7，文件声明=0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "name": "坏JSON返回400",
+      "ok": true,
+      "extra": ""
+    },
+    {
+      "name": "缺canonical字段返回400",
+      "ok": true,
+      "extra": ""
+    },
+    {
+      "name": "缺字段回波判 returned 不报错",
+      "ok": true,
+      "extra": "{'transect': 'E1', 'echo_count': 30, 'result': 'returned', 'detail': '回波点缺复算字段：depth_m'}"
+    },
+    {
+      "name": "已入账件经路由重试→409",
+      "ok": true,
+      "extra": "409"
+    },
+    {
+      "name": "冲突件经路由→409",
+      "ok": true,
+      "extra": "航次CY-B已有入账图层（存根#4，0b8a235fe944），本件报冲突拒收"
+    },
+    {
+      "name": "operator 无权收件→403",
+      "ok": true,
+      "extra": "403"
+    },
+    {
+      "name": "收件列表可查且含三类状态",
+      "ok": true,
+      "extra": "[('CY-MAL', 'returned'), ('CY-B', 'accepted'), ('CY-OLD', 'pending'), ('CY-RET', 'returned'), ('CY-A', 'accepted')]"
+    }
+  ]
+}

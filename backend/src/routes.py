@@ -1,12 +1,12 @@
 import hmac
-from fastapi import APIRouter,Depends,HTTPException
+from fastapi import APIRouter,Depends,HTTPException,UploadFile,File
 from sqlalchemy import select
 from .database import session
 from .models import *
 from .schemas import *
 from .auth import current,editor,supervisor,issue,password_hash
 from .common import dump,get
-from . import navigation_service as nav,transect_service as transect,school_service as school,biology_service as biology,resurvey_service as resurvey,release_service as release
+from . import navigation_service as nav,transect_service as transect,school_service as school,biology_service as biology,resurvey_service as resurvey,release_service as release,intake_service as intake
 router=APIRouter()
 @router.post('/auth/login')
 def login(data:Login,db=Depends(session)):
@@ -15,7 +15,7 @@ def login(data:Login,db=Depends(session)):
     return {'token':issue(row),'username':row.username,'role':row.role}
 @router.get('/workspace')
 def workspace(db=Depends(session),user=Depends(current)):
-    return {m.__tablename__:[dump(r) for r in db.scalars(select(m).order_by(m.id))] for m in [Boat,Cruise,NavigationClosure,Transect,Echo,SchoolAnalysis,SchoolReview,Net,NetCalibration,BioSample,MissingInterval,Resurvey,SurveyRelease]}
+    return {m.__tablename__:[dump(r) for r in db.scalars(select(m).order_by(m.id))] for m in [Boat,Cruise,NavigationClosure,Transect,Echo,SchoolAnalysis,SchoolReview,Net,NetCalibration,BioSample,MissingInterval,Resurvey,SurveyRelease,LayerIntake]}
 @router.post('/cruises')
 def create(data:CruiseInput,db=Depends(session),user=Depends(editor)):return nav.create(db,data,user)
 @router.patch('/cruises/{id}/schedule')
@@ -52,5 +52,14 @@ def cancel(id:int,db=Depends(session),user=Depends(supervisor)):return resurvey.
 def freeze(data:ReleaseInput,db=Depends(session),user=Depends(supervisor)):return release.freeze(db,data,user)
 @router.get('/releases/{id}')
 def frozen(id:int,db=Depends(session),user=Depends(current)):return dump(get(db,SurveyRelease,id))
+@router.post('/intakes')
+async def create_intake(file:UploadFile=File(...),db=Depends(session),user=Depends(supervisor)):
+    raw=(await file.read()).decode('utf-8')
+    return intake.intake(db,raw,file.filename or '',user)
+@router.get('/intakes')
+def list_intakes(db=Depends(session),user=Depends(current)):
+    return [dump(r) for r in db.scalars(select(LayerIntake).order_by(LayerIntake.id.desc()))]
+@router.get('/intakes/{id}')
+def get_intake(id:int,db=Depends(session),user=Depends(current)):return dump(get(db,LayerIntake,id))
 @router.get('/audit')
 def audit(db=Depends(session),user=Depends(supervisor)):return [dump(v) for v in db.scalars(select(Audit).order_by(Audit.id.desc()).limit(100))]

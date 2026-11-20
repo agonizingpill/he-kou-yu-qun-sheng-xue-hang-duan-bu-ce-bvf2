@@ -11,7 +11,7 @@
 3. 群落与噪点：worker实际DBSCAN，复核针对当前回波版本与最新识别ID；有噪点必须解释。同版本重跑识别后，旧复核不会继续放行。
 4. 网具与生物样：标称网目、实测尺度、证书和有效期；误差≤10%合格，最新校验须覆盖上海时区完整返航日期。样本引用已复核分析和实际校验记录，不可关联噪点。
 5. 缺测补航：原航段沿程区间不得重叠，主管按区间自动推导补航地理端点；补航回波、噪点复核和生物样齐全后才能接续。空补航可撤销重排。
-6. 图层封存：缺测全部覆盖后结束现场；逐航段最新分析、噪点复核和对应样本齐全后冻结。JSON快照包含回波、聚类、复核、样本、网具与校验，附原始canonical_json及其UTF-8字节SHA256；航次冻结后拒绝业务变更。
+6. 图层封存：缺测全部覆盖后结束现场；逐航段最新分析、噪点复核和对应样本齐全后冻结。JSON快照包含回波、分群规则（eps/min_samples/数据版本/识别ID）、回波顺序、聚类、复核、样本、网具与校验，附原始canonical_json及其UTF-8字节SHA256；航次冻结后拒绝业务变更。资源调查组在封存页上传下载件收件，凭件内规则与点序离库复算，无需原航次库：先对canonical_json原文重算SHA256并核对snapshot，再逐航段按原参数重跑DBSCAN逐点核对分群成员。群号变化但成员相同照收；摘要一致仍逐点核对，归错群整箱退回并指出航段与不符回波；旧件缺分群规则或回波顺序先挂待补、不入账；整件验过才入账，同件重试幂等不重复收件；同一航次两份不同图层只认先验过入账的一份，另一份报冲突。
 
 ## 启动和账户
 
@@ -42,6 +42,7 @@ JWT有效8小时，角色按服务端当前账户核验。演示凭据仅用于�
 6. 15:20 主管为300米缺测生成E1-S1补航，尚无数据时确认接续被拒绝；到航段页导入补航回波，复核群落并关联生物样后，再确认覆盖。
 7. 16:30 主航段和补航齐全后主管结束现场调查。若重跑最新识别，需新复核与新样本关联，旧复核不能继续用。
 8. 17:00 交给“潮汐渔研站资源调查组”，冻结图层，下载`CY031-survey-layer.json`，对导出字段canonical_json原文的UTF-8字节计算SHA256，与sha256比较，并检查json.loads(canonical_json)等于snapshot后收件。不要对浏览器重新序列化的snapshot计算原始校验和。此后该航次业务记录只读。
+9. 资源组主管在“图层封存”页上传该下载件：系统重算SHA256、按件内分群规则与回波顺序逐航段重跑DBSCAN并逐点核对；通过则入账生成收件存根，归错群退回并指出航段，旧件缺依据挂待补，重复提交或同航次第二份图层分别提示不重复收件与冲突。
 
 种子时间固定在2026-11-18，全部航窗规则比较记录本身，不依赖当前系统时间，因此以后仍能演示。上海日期用于网具有效期，数据库时间存UTC。
 
@@ -60,7 +61,7 @@ worker从Redis队列领取任务，保存assignments、metrics、失败原因，
 | backend/src/models.py、schemas.py | Cruise/NavigationClosure、Transect/Echo、SchoolAnalysis/Review、Net/Calibration/BioSample、MissingInterval/Resurvey、SurveyRelease关系模型与输入契约 |
 | navigation_service.py | 航窗、潮汐冲突、同船占用与开返航 |
 | transect_service.py、school_service.py、algorithm.py、worker.py | 航段长度、探头范围、版本化回波、实际聚类和噪点复核 |
-| biology_service.py、resurvey_service.py、release_service.py | 网具、生物样、补测地理接续与JSON冻结 |
+| biology_service.py、resurvey_service.py、release_service.py、intake_service.py | 网具、生物样、补测地理接续、JSON冻结与资源组离库收件复算 |
 | common.py、auth.py、middlewares.py | 根锁、三角色JWT、动作审计、请求追踪和突发限流 |
 | frontend/src/pages | 六个原生ES modules业务页 |
 | frontend/src/components | voyage-context跨页航次/航段、survey-map真实航迹剖面、controls表单表格 |
